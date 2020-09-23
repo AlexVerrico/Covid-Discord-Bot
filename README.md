@@ -18,7 +18,7 @@ Displays the number of new deaths for today and yesterday for the provided locat
 Coming soon - Displays the number of recoveries for today and yesterday for the given location.
 
 
-If you find this Bot useful, please consider supporting my work through [BuyMeACoffee.com/AlexVerrico](https://www.buymeacoffee.com/AlexVerrico)
+### If you find this Bot useful, please consider supporting my work through [BuyMeACoffee.com/AlexVerrico](https://www.buymeacoffee.com/AlexVerrico)
 
 ## Contributing:
 

@@ -1,8 +1,7 @@
 import os
-import covid_parser as covid
+import CovidParser.covid_parser as covid
 import datetime
 from dotenv import load_dotenv
-
 from discord.ext import commands
 
 load_dotenv()

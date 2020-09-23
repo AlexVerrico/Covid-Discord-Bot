@@ -1,0 +1,3 @@
+[submodule "CovidParser"]
+	path = CovidParser
+	url = https://github.com/AlexVerrico/CovidParser

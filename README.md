@@ -14,8 +14,8 @@ Available commands:
 Displays the number of new cases for today and yesterday for the provided location
 * !covid new deaths &lt;location&gt;  
 Displays the number of new deaths for today and yesterday for the provided location
-* !covid recoveries &lt;location&gt;  
-Coming soon - Displays the number of recoveries for today and yesterday for the given location.
+* !covid new recoveries &lt;location&gt;  
+Displays the number of recoveries for today and yesterday for the given location.
 
 
 ### If you find this Bot useful, please consider supporting my work through [BuyMeACoffee.com/AlexVerrico](https://www.buymeacoffee.com/AlexVerrico)
@@ -26,7 +26,7 @@ Coming soon - Displays the number of recoveries for today and yesterday for the 
 Clone the repo using `git clone https://github.com/AlexVerrico/Covid-Discord-Bot.git`  
 CD into the repo `cd Covid-Discord-Bot`  
 Add the submodules using `git submodule init && git submodule update`  
-You will need to install the python modules `discord.py` and `dotenv`  
+You will need to install the python modules `discord.py`, `dotenv` and `urllib3`  
 You will also need to create a file in your home directory named `.env` with the contents:  
 ```
 DISCORD_TOKEN=[your-discord-bot-token]

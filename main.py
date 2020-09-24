@@ -14,7 +14,7 @@ bot = commands.Bot(command_prefix="".join((PREFIX, ' ')))
 
 supportedResponse = "New %data_type% for %location%:\nToday: %tday%\nYesterday: %yday%\nSource: %source%"
 semiSupportedResponse = "We don't fully support this location, however we were still able to find the information that you wanted:\nNew %data_type%:\nToday: %tday%\nYesterday: %yday%"
-unsupportedResponse = "Error: that location is not supported yet. See example.com for a full list of supported locations."
+unsupportedResponse = "Error: that location is not supported yet. See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported locations."
 
 locations = {'aus': 'Australia',
              'nsw': 'New South Wales',
@@ -55,40 +55,60 @@ locationsv2 = {
 
 
 def get_data(loc='aus', data_type='cases'):
-    if data_type == 'cases':
-        if loc in locationsv2:
-            data = covid.new_cases(location=loc)
-            response = supportedResponse.replace('%location%', locationsv2[loc]['name'])
-            response = response.replace('%source%', locationsv2[loc]['source'])
+    # if data_type == 'cases':
+    #     if loc in locationsv2:
+    #         data = covid.new_cases(location=loc)
+    #         response = supportedResponse.replace('%location%', locationsv2[loc]['name'])
+    #         response = response.replace('%source%', locationsv2[loc]['source'])
+    #         response = response.replace('%data_type%', data_type)
+    #         response = response.replace('%tday%', data[0])
+    #         response = response.replace('%yday%', data[1])
+    #     else:
+    #         try:
+    #             data = covid.new_cases(location=loc)
+    #             response = semiSupportedResponse.replace('%tday%', data[0])
+    #             response = response.replace('%data_type%', data_type)
+    #             response = response.replace('%yday%', data[1])
+    #         except:
+    #             response = unsupportedResponse
+    #     return response
+    # elif data_type == 'deaths':
+    #     if loc in locationsv2:
+    #         data = covid.new_deaths(location=loc)
+    #         response = supportedResponse.replace('%location%', locationsv2[loc]['name'])
+    #         response = response.replace('%source%', locationsv2[loc]['source'])
+    #         response = response.replace('%data_type%', data_type)
+    #         response = response.replace('%tday%', data[0])
+    #         response = response.replace('%yday%', data[1])
+    #     else:
+    #         try:
+    #             data = covid.new_deaths(location=loc)
+    #             response = semiSupportedResponse.replace('%tday%', data[0])
+    #             response = response.replace('%data_type%', data_type)
+    #             response = response.replace('%yday%', data[1])
+    #         except:
+    #             response = unsupportedResponse
+    # elif data_type == 'recoveries':
+    if loc in locationsv2:
+        data = covid.new(location=loc, data_type=data_type)
+        if data == "unsupportedDataType":
+            return unsupportedResponse
+        response = supportedResponse.replace('%location%', locationsv2[loc]['name'])
+        response = response.replace('%source%', locationsv2[loc]['source'])
+        response = response.replace('%data_type%', data_type)
+        response = response.replace('%tday%', data[0])
+        response = response.replace('%yday%', data[1])
+    else:
+        # try:
+            data = covid.new(location=loc, data_type=data_type)
+            if data == "unsupportedLocation":
+                return unsupportedResponse
+            response = semiSupportedResponse.replace('%tday%', data[0])
             response = response.replace('%data_type%', data_type)
-            response = response.replace('%tday%', data[0])
             response = response.replace('%yday%', data[1])
-        else:
-            try:
-                data = covid.new_cases(location=loc)
-                response = semiSupportedResponse.replace('%tday%', data[0])
-                response = response.replace('%data_type%', data_type)
-                response = response.replace('%yday%', data[1])
-            except:
-                response = unsupportedResponse
-        return response
-    elif data_type == 'deaths':
-        if loc in locationsv2:
-            data = covid.new_deaths(location=loc)
-            response = supportedResponse.replace('%location%', locationsv2[loc]['name'])
-            response = response.replace('%source%', locationsv2[loc]['source'])
-            response = response.replace('%data_type%', data_type)
-            response = response.replace('%tday%', data[0])
-            response = response.replace('%yday%', data[1])
-        else:
-            try:
-                data = covid.new_deaths(location=loc)
-                response = semiSupportedResponse.replace('%tday%', data[0])
-                response = response.replace('%data_type%', data_type)
-                response = response.replace('%yday%', data[1])
-            except:
-                response = unsupportedResponse
-        return response
+        # except:
+        #     response = unsupportedResponse
+    return response
 
 
 @bot.event

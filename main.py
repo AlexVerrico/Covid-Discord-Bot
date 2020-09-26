@@ -117,24 +117,24 @@ async def on_ready():
     return
 
 
-@bot.event
-async def on_guild_join(ctx):
-    with open('serverCount.txt', 'r') as f:
-        count = int(f.read())
-    with open('serverCount.txt', 'w') as f:
-        count = count + 1
-        f.write(str(count))
-    return
-
-
-@bot.event
-async def on_guild_remove(ctx):
-    with open('serverCount.txt', 'r') as f:
-        count = int(f.read())
-    with open('serverCount.txt', 'w') as f:
-        count = count - 1
-        f.write(str(count))
-    return
+# @bot.event
+# async def on_guild_join(ctx):
+#     with open('serverCount.txt', 'r') as f:
+#         count = int(f.read())
+#     with open('serverCount.txt', 'w') as f:
+#         count = count + 1
+#         f.write(str(count))
+#     return
+#
+#
+# @bot.event
+# async def on_guild_remove(ctx):
+#     with open('serverCount.txt', 'r') as f:
+#         count = int(f.read())
+#     with open('serverCount.txt', 'w') as f:
+#         count = count - 1
+#         f.write(str(count))
+#     return
 
 
 @bot.command(name='new', help='Shows new info, see https://alexverrico.com/projects/CovidDiscordBot/ for more info')

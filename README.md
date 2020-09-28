@@ -1,7 +1,5 @@
 # Covid Discord Bot
 
-### PSA 26/9/20: `!covid new recoveries <state>` is broken. Currently no ETA for repair.
-
 This is a basic Discord bot to give you updates on covid 19. It currently has offical support for a limited number of countries, with more coming soon. Some other countries may work, but there is no guarantee. You can use the following link to add the bot to your server:
 [https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=67584&scope=bot](https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=67584&scope=bot)
 
@@ -36,3 +34,8 @@ PREFIX=!covid
 ```  
 For more info on how to get a discord bot token see [https://discordpy.readthedocs.io/en/latest/discord.html#discord-intro](https://discordpy.readthedocs.io/en/latest/discord.html#discord-intro)
 You can replace the value of `PREFIX=` with any prefix that you want.
+
+## PSAs:
+ - ~~26/9/20: `!covid new recoveries <state>` is broken. Currently no ETA for repair.~~
+    - Fixed 28/9/20 by @AlexVerrico
+ 

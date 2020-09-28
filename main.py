@@ -100,12 +100,12 @@ def get_data(loc='aus', data_type='cases'):
         response = response.replace('%yday%', data[1])
     else:
         # try:
-            data = covid.new(location=loc, data_type=data_type)
-            if data == "unsupportedLocation":
-                return unsupportedResponse
-            response = semiSupportedResponse.replace('%tday%', data[0])
-            response = response.replace('%data_type%', data_type)
-            response = response.replace('%yday%', data[1])
+        data = covid.new(location=loc, data_type=data_type)
+        if data == "unsupportedLocation":
+            return unsupportedResponse
+        response = semiSupportedResponse.replace('%tday%', data[0])
+        response = response.replace('%data_type%', data_type)
+        response = response.replace('%yday%', data[1])
         # except:
         #     response = unsupportedResponse
     return response

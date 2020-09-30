@@ -10,13 +10,14 @@ Supported locations:
 
 Available commands:
 
-* !covid new cases &lt;location&gt;  
+* `!covid new cases <location>`  
 Displays the number of new cases for today and yesterday for the provided location
-* !covid new deaths &lt;location&gt;  
+* `!covid new deaths <location>`  
 Displays the number of new deaths for today and yesterday for the provided location
-* !covid new recoveries &lt;location&gt;  
-Displays the number of recoveries for today and yesterday for the given location.
-
+* `!covid new recoveries <location>`  
+Displays the number of recoveries for today and yesterday for the given location.  
+* `!covid graph`  
+Displays a graph of new cases for all Australian States and Territories for the last 2 weeks
 
 ### If you find this Bot useful, please consider supporting my work through [BuyMeACoffee.com/AlexVerrico](https://www.buymeacoffee.com/AlexVerrico)
 
@@ -33,9 +34,19 @@ DISCORD_TOKEN=[your-discord-bot-token]
 PREFIX=!covid
 ```  
 For more info on how to get a discord bot token see [https://discordpy.readthedocs.io/en/latest/discord.html#discord-intro](https://discordpy.readthedocs.io/en/latest/discord.html#discord-intro)
-You can replace the value of `PREFIX=` with any prefix that you want.
+You can replace the value of `PREFIX=` with any prefix that you want.  
+
+If you find a bug to fix, or want to add a feature, please open an issue to discuss it first to avoid multiple people working on the same thing needlessly.  
+Please ensure that all PRs are made to the `dev` branch  
+Please ensure that you follow the style of the code (eg. spaces not tabs, function names use underscores, global variables use uppercase letters to seperate words (globalVariable), local variables are all lowercase with no seperation between words (localvariable)  
+Please use descriptive function and variable names  
+Please update any relevant documentation  
 
 ## PSAs:
  - ~~26/9/20: `!covid new recoveries <state>` is broken. Currently no ETA for repair.~~
     - Fixed 28/9/20 by @AlexVerrico
  
+## Changelog:
+ - 30/9/20: Added `!covid graph` command (@AlexVerrico)
+## Contributors:
+ - [@AlexVerrico](https://github.com/AlexVerrico/)

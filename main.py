@@ -12,7 +12,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 PREFIX = os.getenv('PREFIX')
 
-client = discord.Client()
+# client = discord.Client()
 
 bot = commands.Bot(command_prefix="".join((PREFIX, ' ')))
 
@@ -113,6 +113,13 @@ async def new(ctx, data_type='cases', location='aus'):
     await ctx.send(response)
 
 
+@bot.command(name='botnew', help='Shows new info, see https://alexverrico.com/projects/CovidDiscordBot/ for more info')
+@commands.has_role('Bots')
+async def new(ctx, data_type='cases', location='aus'):
+    response = get_data(location.lower(), data_type)
+    await ctx.send(response)
+
+
 @bot.command(name='graph')
 async def graph(ctx):
     dldata = covid.download_data(r"https://atlas.jifo.co/api/connectors/0b334273-5661-4837-a639-e3a384d81d20")
@@ -167,4 +174,3 @@ async def graph(ctx):
 
 
 bot.run(TOKEN)
-client.run(TOKEN)

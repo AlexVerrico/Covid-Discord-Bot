@@ -12,7 +12,7 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 PREFIX = os.getenv('PREFIX')
 
-# client = discord.Client()
+client = discord.Client()
 
 bot = commands.Bot(command_prefix="".join((PREFIX, ' ')))
 
@@ -167,3 +167,4 @@ async def graph(ctx):
 
 
 bot.run(TOKEN)
+client.run(TOKEN)

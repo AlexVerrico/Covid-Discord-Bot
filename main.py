@@ -166,6 +166,20 @@ async def graph(ctx):
     os.remove('temp.jpg')
 
 
+@bot.command(name='pog', help=':pog:')
+async def pog(ctx):
+    _tempcases = covid.new('aus', data_type='cases')
+    _tempdeaths = covid.new('aus', data_type='deaths')
+    if _tempdeaths[0] < _tempdeaths[1]:
+        if _tempcases[0] < _tempcases[1]:
+            await ctx.send('pog :pog:')
+        else:
+            await ctx.send('not pog')
+    else:
+        await ctx.send('not pog')
+    return
+
+
 @bot.event
 async def on_message(message):
     ctx = await bot.get_context(message)

@@ -183,6 +183,8 @@ async def pog(ctx):
 @bot.event
 async def on_message(message):
     ctx = await bot.get_context(message)
+    if message.content == '!pog' or message.content == '!pog ' or str(message.content).startswith('!pog'):
+        await ctx.send(':pog:')
     await bot.invoke(ctx)
 
 

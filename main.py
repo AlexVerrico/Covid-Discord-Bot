@@ -184,7 +184,7 @@ async def pog(ctx):
 async def on_message(message):
     ctx = await bot.get_context(message)
     if message.content == '!pog' or message.content == '!pog ' or str(message.content).startswith('!pog'):
-        await ctx.send(':pog:')
+        await ctx.send(file=discord.File('imgs/pog.png'))
     await bot.invoke(ctx)
 
 

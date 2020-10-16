@@ -166,13 +166,27 @@ async def graph(ctx):
     os.remove('temp.jpg')
 
 
-@bot.command(name='pog', help=':pog:')
+@bot.command(name='pogvic', help='is covid pog in vic?')
+async def pog(ctx):
+    _tempcases = covid.new('vic', data_type='cases')
+    _tempdeaths = covid.new('vic', data_type='deaths')
+    if _tempdeaths[0] < _tempdeaths[1] or _tempdeaths[0] == "0":
+        if _tempcases[0] < _tempcases[1] or _tempcases[0] == "0":
+            await ctx.send('covid:', file=discord.File('imgs/pog.png'))
+        else:
+            await ctx.send('not pog')
+    else:
+        await ctx.send('not pog')
+    return
+
+
+@bot.command(name='pog', help='is covid pog in aus?')
 async def pog(ctx):
     _tempcases = covid.new('aus', data_type='cases')
     _tempdeaths = covid.new('aus', data_type='deaths')
-    if _tempdeaths[0] < _tempdeaths[1]:
-        if _tempcases[0] < _tempcases[1]:
-            await ctx.send('pog :pog:')
+    if _tempdeaths[0] < _tempdeaths[1] or _tempdeaths[0] == "0":
+        if _tempcases[0] < _tempcases[1] or _tempcases[0] == "0":
+            await ctx.send('covid:', file=discord.File('imgs/pog.png'))
         else:
             await ctx.send('not pog')
     else:

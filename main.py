@@ -111,6 +111,7 @@ async def on_ready():
 async def new(ctx, data_type='cases', location='aus'):
     response = get_data(location.lower(), data_type)
     await ctx.send(response)
+    return
 
 
 @bot.command(name='graph')
@@ -164,14 +165,15 @@ async def graph(ctx):
     # plt.show()
     await ctx.send(file=discord.File('temp.jpg'))
     os.remove('temp.jpg')
+    return
 
 
 @bot.command(name='pogvic', help='is covid pog in vic?')
-async def vicpog(ctx):
+async def pogvic(ctx):
     _tempcases = covid.new('vic', data_type='cases')
     _tempdeaths = covid.new('vic', data_type='deaths')
-    if _tempdeaths[0] < _tempdeaths[1] or _tempdeaths[0] == "0":
-        if _tempcases[0] < _tempcases[1] or _tempcases[0] == "0":
+    if int(_tempdeaths[0]) < int(_tempdeaths[1]) or int(_tempdeaths[0]) == 0:
+        if int(_tempcases[0]) < int(_tempcases[1]) or int(_tempcases[0]) == 0:
             await ctx.send('covid:', file=discord.File('imgs/pog.png'))
         else:
             await ctx.send('not pog')
@@ -200,6 +202,7 @@ async def on_message(message):
     if message.content == '!pog' or message.content == '!pog ' or str(message.content).startswith('!pog'):
         await ctx.send(file=discord.File('imgs/pog.png'))
     await bot.invoke(ctx)
+    return
 
 
 bot.run(TOKEN)

@@ -167,7 +167,7 @@ async def graph(ctx):
 
 
 @bot.command(name='pogvic', help='is covid pog in vic?')
-async def pog(ctx):
+async def vicpog(ctx):
     _tempcases = covid.new('vic', data_type='cases')
     _tempdeaths = covid.new('vic', data_type='deaths')
     if _tempdeaths[0] < _tempdeaths[1] or _tempdeaths[0] == "0":

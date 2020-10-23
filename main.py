@@ -196,6 +196,33 @@ async def pog(ctx):
     return
 
 
+@bot.command(name='average', help='14 day average')
+async def average(ctx, data_type='cases', location='aus'):
+    data = covid.new(location=location, data_type=data_type, time='full')
+    x = 0
+    for i in range(1, 15):
+        # print(i)
+        print(data[-i])
+        if data[-i] == '':
+            y = 0
+        else:
+            y = int(data[-i])
+        x = x + y
+    print(x)
+    x = float(x) / 14
+    x = float(str(x)[:4])
+    print("14 day average = %s" % x)
+    # print((int(x)/14))
+
+
+@bot.command(name='total')
+async def total(ctx, data_type='cases', location='global'):
+    data = covid.total(data_type='cases', location='global')
+    response = 'To date there have been %s confirmed cases of covid-19 recorded globally.' % data
+    await ctx.send(response)
+    return
+
+
 @bot.event
 async def on_message(message):
     ctx = await bot.get_context(message)

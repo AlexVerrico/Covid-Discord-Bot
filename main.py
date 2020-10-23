@@ -11,6 +11,7 @@ import json
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 PREFIX = os.getenv('PREFIX')
+BASE = os.getenv('COVID_BOT_BASEDIR')
 
 # client = discord.Client()
 
@@ -188,7 +189,7 @@ async def pog(ctx):
     _tempdeaths = covid.new('aus', data_type='deaths')
     if _tempdeaths[0] < _tempdeaths[1] or _tempdeaths[0] == "0":
         if _tempcases[0] < _tempcases[1] or _tempcases[0] == "0":
-            await ctx.send('covid:', file=discord.File('imgs/pog.png'))
+            await ctx.send('covid:', file=discord.File("".join((BASE, 'imgs/pog.png'))))
         else:
             await ctx.send('not pog')
     else:
@@ -227,7 +228,7 @@ async def total(ctx, data_type='cases', location='global'):
 async def on_message(message):
     ctx = await bot.get_context(message)
     if message.content == '!pog' or message.content == '!pog ' or str(message.content).startswith('!pog'):
-        await ctx.send(file=discord.File('imgs/pog.png'))
+        await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
     await bot.invoke(ctx)
     return
 

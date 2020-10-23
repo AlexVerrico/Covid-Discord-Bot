@@ -175,7 +175,7 @@ async def pogvic(ctx):
     _tempdeaths = covid.new('vic', data_type='deaths')
     if int(_tempdeaths[0]) < int(_tempdeaths[1]) or int(_tempdeaths[0]) == 0:
         if int(_tempcases[0]) < int(_tempcases[1]) or int(_tempcases[0]) == 0:
-            await ctx.send('covid:', file=discord.File('imgs/pog.png'))
+            await ctx.send('covid:', file=discord.File("".join((BASE, 'imgs/pog.png'))))
         else:
             await ctx.send('not pog')
     else:

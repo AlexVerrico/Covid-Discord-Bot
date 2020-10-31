@@ -21,6 +21,8 @@ supportedResponse = "New %data_type% for %location%:\nToday: %tday%\nYesterday: 
 semiSupportedResponse = "We don't fully support this location, however we were still able to find the information that you wanted:\nNew %data_type%:\nToday: %tday%\nYesterday: %yday%"
 unsupportedResponse = "Error: that location is not supported yet. See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported locations."
 
+averageResponse = "Average daily %data_type% for last 14 days in %location%: %data%"
+
 locations = {'aus': 'Australia',
              'nsw': 'New South Wales',
              'vic': 'Victoria',
@@ -199,21 +201,20 @@ async def pog(ctx):
 
 @bot.command(name='average', help='14 day average')
 async def average(ctx, data_type='cases', location='aus'):
-    data = covid.new(location=location, data_type=data_type, time='full')
+    data = covid.new(location=location, data_type=data_type, time='14days')
     x = 0
-    for i in range(1, 15):
-        # print(i)
-        print(data[-i])
-        if data[-i] == '':
+    for i in range(0, 14):
+        if data[i] == '':
             y = 0
         else:
-            y = int(data[-i])
+            y = int(data[i])
         x = x + y
-    print(x)
     x = float(x) / 14
     x = float(str(x)[:4])
-    print("14 day average = %s" % x)
-    # print((int(x)/14))
+    response = averageResponse.replace('%location%', location)
+    response = response.replace('%data_type%', data_type)
+    response = response.replace('%data%', str(x))
+    await ctx.send(response)
 
 
 @bot.command(name='total')

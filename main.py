@@ -225,7 +225,7 @@ For more information, visit https://github.com/AlexVerrico/Covid-Discord-Bot/
 _This bot also responds to `!pog`, I'll let you figure out what that does :wink:._
 
 Developed by Alex Verrico (https://alexverrico.com/)
-_If you find this bot useful, please consider supporting it through https://www.buymeacoffee.com/AlexVerrico
+_If you find this bot useful, please consider supporting it through https://www.buymeacoffee.com/AlexVerrico_
 """
     await ctx.send(help_response)
 

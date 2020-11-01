@@ -8,16 +8,22 @@ Supported locations:
 * USA
 * All Australian States and Territories.
 
+Unless otherwise stated, <type> can be cases, recoveries, or deaths.
+
 Available commands:
 
-* `!covid new cases <location>`  
-Displays the number of new cases for today and yesterday for the provided location
-* `!covid new deaths <location>`  
-Displays the number of new deaths for today and yesterday for the provided location
-* `!covid new recoveries <location>`  
-Displays the number of recoveries for today and yesterday for the given location.  
+* `!covid new <type> <location>`  
+Displays the number of new <type> for today and yesterday for the provided location. use it like `!covid new cases aus`    
 * `!covid graph`  
-Displays a graph of new cases for all Australian States and Territories for the last 2 weeks
+Displays a graph of new cases for all Australian States and Territories for the last 2 weeks. Use it like `!covid graph`
+* `!covid average <type> <location`  
+Displays the 14 day average for the chosen location. Use it like `!covid average cases aus`  
+* `!covid total`  
+Total covid-19 cases recorded to-date. Use it like `!covid total`  
+* `!covid pog`  
+Is covid Pog in Australia? Use it like `!covid pog` _(Requested by a friend)_  
+* `!covid pogvic`  
+Is covid Pog in Victoria? Use it like `!covid pogvic` _(Requested by a friend)_  
 
 ### If you find this Bot useful, please consider supporting my work through [BuyMeACoffee.com/AlexVerrico](https://www.buymeacoffee.com/AlexVerrico)
 
@@ -48,5 +54,6 @@ Please update any relevant documentation
  
 ## Changelog:
  - 30/9/20: Added `!covid graph` command (@AlexVerrico)
+ - Some time during October 2020: Added `!covid total`, `!covid pog`, `!covid pogvic`, `!covid average` (@AlexVerrico)
 ## Contributors:
  - [@AlexVerrico](https://github.com/AlexVerrico/)

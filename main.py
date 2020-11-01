@@ -3,7 +3,6 @@ import CovidParser.covid_parser as covid
 import datetime
 from dotenv import load_dotenv
 from discord.ext import commands
-import csv
 from matplotlib import pyplot as plt
 import discord.file
 import json
@@ -13,39 +12,43 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 PREFIX = os.getenv('PREFIX')
 BASE = os.getenv('COVID_BOT_BASEDIR')
 
-# client = discord.Client()
-
 bot = commands.Bot(command_prefix="".join((PREFIX, ' ')))
 
-supportedResponse = "New %data_type% for %location%:\nToday: %tday%\nYesterday: %yday%\nSource: %source%"
-semiSupportedResponse = "We don't fully support this location, however we were still able to find the information that you wanted:\nNew %data_type%:\nToday: %tday%\nYesterday: %yday%"
-unsupportedResponse = "Error: that location is not supported yet. See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported locations."
+supportedResponse = """New %data_type% for %location%:
+Today: %tday%
+Yesterday: %yday%
+Source: %source%"""
+# semiSupportedResponse = "We don't fully support this location, however we were still able to find the information that you wanted:\nNew %data_type%:\nToday: %tday%\nYesterday: %yday%"
+unsupportedResponse = """Error: that location is not supported yet.
+See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported locations."""
+unsupportedDataTypeResponse = """Error: that data type is not supported yet.
+See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported data types."""
 
 averageResponse = "Average daily %data_type% for last 14 days in %location%: %data%"
 
-locations = {'aus': 'Australia',
-             'nsw': 'New South Wales',
-             'vic': 'Victoria',
-             'qld': 'Queensland',
-             'sa': 'South Australia',
-             'wa': 'Western Australia',
-             'tas': 'Tasmania',
-             'nt': 'Northern Territory',
-             'act': 'Australian Capital Territory',
-             'usa': 'United States of America'
-             }
+# locations = {'aus': 'Australia',
+#              'nsw': 'New South Wales',
+#              'vic': 'Victoria',
+#              'qld': 'Queensland',
+#              'sa': 'South Australia',
+#              'wa': 'Western Australia',
+#              'tas': 'Tasmania',
+#              'nt': 'Northern Territory',
+#              'act': 'Australian Capital Territory',
+#              'usa': 'United States of America'
+#              }
 
-sources = {'aus': 'covid19data.com.au',
-           'nsw': 'covid19data.com.au',
-           'vic': 'covid19data.com.au',
-           'qld': 'covid19data.com.au',
-           'sa': 'covid19data.com.au',
-           'wa': 'covid19data.com.au',
-           'tas': 'covid19data.com.au',
-           'nt': 'covid19data.com.au',
-           'act': 'covid19data.com.au',
-           'usa': 'epidemic-stats.com'
-           }
+# sources = {'aus': 'covid19data.com.au',
+#            'nsw': 'covid19data.com.au',
+#            'vic': 'covid19data.com.au',
+#            'qld': 'covid19data.com.au',
+#            'sa': 'covid19data.com.au',
+#            'wa': 'covid19data.com.au',
+#            'tas': 'covid19data.com.au',
+#            'nt': 'covid19data.com.au',
+#            'act': 'covid19data.com.au',
+#            'usa': 'epidemic-stats.com'
+#            }
 
 locationsv2 = {
     'aus': {'name': 'Australia', 'source': 'covid19data.com.au'},
@@ -65,66 +68,43 @@ def get_data(loc='aus', data_type='cases'):
     if loc in locationsv2:
         data = covid.new(location=loc, data_type=data_type)
         if data == "unsupportedDataType":
-            return unsupportedResponse
+            return unsupportedDataTypeResponse
         response = supportedResponse.replace('%location%', locationsv2[loc]['name'])
         response = response.replace('%source%', locationsv2[loc]['source'])
         response = response.replace('%data_type%', data_type)
         response = response.replace('%tday%', data[0])
         response = response.replace('%yday%', data[1])
     else:
-        # try:
         data = covid.new(location=loc, data_type=data_type)
         if data == "unsupportedLocation":
             return unsupportedResponse
-        response = semiSupportedResponse.replace('%tday%', data[0])
+        response = supportedResponse.replace('%tday%', data[0])
         response = response.replace('%data_type%', data_type)
         response = response.replace('%yday%', data[1])
-        # except:
-        #     response = unsupportedResponse
+        response = response.replace('%source%', 'epidemic-stats.com')
+        response = response.replace('%location%', loc)
     return response
 
 
 @bot.event
 async def on_ready():
-    print(f'{bot.user.name} has connected to Discord at %s' % datetime.datetime.now().strftime('%M:%H %d-%m-%y'))
+    print(f'{bot.user.name} has connected to Discord at {datetime.datetime.now().strftime("%H:%M %d-%m-%y")}')
     return
 
 
-# @bot.event
-# async def on_guild_join(ctx):
-#     with open('serverCount.txt', 'r') as f:
-#         count = int(f.read())
-#     with open('serverCount.txt', 'w') as f:
-#         count = count + 1
-#         f.write(str(count))
-#     return
-#
-#
-# @bot.event
-# async def on_guild_remove(ctx):
-#     with open('serverCount.txt', 'r') as f:
-#         count = int(f.read())
-#     with open('serverCount.txt', 'w') as f:
-#         count = count - 1
-#         f.write(str(count))
-#     return
-
-
-@bot.command(name='new', help='Shows new info, see https://alexverrico.com/projects/CovidDiscordBot/ for more info')
+@bot.command(name='new', help='Shows new data')
 async def new(ctx, data_type='cases', location='aus'):
     response = get_data(location.lower(), data_type)
     await ctx.send(response)
     return
 
 
-@bot.command(name='graph')
+@bot.command(name='graph', help='Displays a graph of cases in Australian states for the last 14 days')
 async def graph(ctx):
     dldata = covid.download_data(r"https://atlas.jifo.co/api/connectors/0b334273-5661-4837-a639-e3a384d81d20")
     dldata = json.loads(dldata)
     dldata = dldata["data"]
     dldata = dldata[8]
-
-    # filename = 'states14day.csv'
 
     data = {'dates': {'data': [], 'num': 0},
             'nsw': {'data': [], 'num': 1, 'color': 'black', 'label': 'NSW'},
@@ -165,7 +145,6 @@ async def graph(ctx):
     plt.tick_params(axis='both', which='major', labelsize=6)
     plt.legend()
     fig.savefig('temp.jpg')
-    # plt.show()
     await ctx.send(file=discord.File('temp.jpg'))
     os.remove('temp.jpg')
     return
@@ -217,18 +196,44 @@ async def average(ctx, data_type='cases', location='aus'):
     await ctx.send(response)
 
 
-@bot.command(name='total')
+@bot.command(name='total', help='Total covid-19 cases recorded to date')
 async def total(ctx, data_type='cases', location='global'):
     data = covid.total(data_type='cases', location='global')
-    response = 'To date there have been %s confirmed cases of covid-19 recorded globally.' % data
+    response = f'To date there have been {data} confirmed cases of covid-19 recorded globally.'
     await ctx.send(response)
     return
+
+
+bot.remove_command('help')
+
+
+@bot.command(name='help')
+async def helper(ctx):
+    help_response = """
+    **Covid AU Bot:**
+_A simple discord bot to give you up-to-date info on Covid-19_
+**Commands:**
+**new**: Provides data for the last 2 days for the chosen location. Use it like `!covid new cases aus`
+**graph**: Displays a graph of cases in Australian states for the last 14 days. Use it like `!covid graph`
+**average**: Displays the 14 day average for the chosen location. Use it like `!covid average cases aus`
+**total**: Total covid-19 cases recorded to-date. Use it like `!covid total`
+**pog**: Is covid Pog in Australia? Use it like `!covid pog`
+**pogvic**: Is covid Pog in Victoria? Use it like `!covid pogvic`
+
+For more information, visit https://github.com/AlexVerrico/Covid-Discord-Bot/
+
+_This bot also responds to `!pog`, I'll let you figure out what that does :wink:._
+
+Developed by Alex Verrico (https://alexverrico.com/)
+_If you find this bot useful, please consider supporting it through https://www.buymeacoffee.com/AlexVerrico
+"""
+    await ctx.send(help_response)
 
 
 @bot.event
 async def on_message(message):
     ctx = await bot.get_context(message)
-    if message.content == '!pog' or message.content == '!pog ' or str(message.content).startswith('!pog'):
+    if str(message.content).startswith('!pog'):
         await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
     await bot.invoke(ctx)
     return

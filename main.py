@@ -235,6 +235,11 @@ async def on_message(message):
     ctx = await bot.get_context(message)
     if str(message.content).startswith('!pog'):
         await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
+    if 'biden' in str(message.content):
+        if str(ctx.author) != "Covid AU Testing Bot#2116":
+            x = """||Fuck|| biden
+||_Please note that this does not necessarily reflect the opinions of the bots creators :grin:_||"""
+            await ctx.send(x)
     await bot.invoke(ctx)
     return
 

@@ -18,7 +18,6 @@ supportedResponse = """New %data_type% for %location%:
 Today: %tday%
 Yesterday: %yday%
 Source: %source%"""
-# semiSupportedResponse = "We don't fully support this location, however we were still able to find the information that you wanted:\nNew %data_type%:\nToday: %tday%\nYesterday: %yday%"
 unsupportedResponse = """Error: that location is not supported yet.
 See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported locations."""
 unsupportedDataTypeResponse = """Error: that data type is not supported yet.
@@ -235,7 +234,7 @@ async def on_message(message):
     ctx = await bot.get_context(message)
     if str(message.content).startswith('!pog'):
         await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
-    if 'biden' in str(message.content):
+    if 'biden' in str(message.content).lower():
         if str(ctx.author) != "Covid AU Testing Bot#2116" and str(ctx.author) != "Covid AU Bot#9575":
             x = """||Fuck|| biden
 ||_Please note that this does not necessarily reflect the opinions of the bots creators :grin:_||"""

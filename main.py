@@ -236,7 +236,12 @@ async def on_message(message):
         await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
     if 'biden' in str(message.content).lower():
         if str(ctx.author) != "Covid AU Testing Bot#2116" and str(ctx.author) != "Covid AU Bot#9575":
-            x = """||Fuck|| biden
+            x = """||Fuck|| Biden
+||_Please note that this does not necessarily reflect the opinions of the bots creators :grin:_||"""
+            await ctx.send(x)
+    if 'trump' in str(message.content).lower():
+        if str(ctx.author) != "Covid AU Testing Bot#2116" and str(ctx.author) != "Covid AU Bot#9575":
+            x = """Trump will **Make America Great Again**!
 ||_Please note that this does not necessarily reflect the opinions of the bots creators :grin:_||"""
             await ctx.send(x)
     await bot.invoke(ctx)

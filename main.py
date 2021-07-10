@@ -120,6 +120,8 @@ async def graph(ctx):
             'act': {'data': [], 'num': 8, 'color': 'grey', 'label': 'ACT'}
             }
 
+    temp_vals = []
+
     for i in range(1, 15):
         for x in data:
             if x == "dates":
@@ -137,12 +139,19 @@ async def graph(ctx):
             continue
         else:
             plt.plot(data['dates']['data'], data[i]['data'], c=data[i]['color'], label=data[i]['label'])
+            for x in data[i]['data']:
+                temp_vals.append(int(x))
             for x, y in zip(data['dates']['data'], data[i]['data']):
                 if y != 0:
                     plt.annotate(xy=[x, y], text=y, c=data[i]['color'])
 
     plt.title("Cases from last 2 weeks", fontsize=24)
-    plt.ylim(0, 50)
+    max_val = 0
+    for i in temp_vals:
+        if i > max_val:
+            max_val = i
+    max_val = max_val + int(max_val/10)
+    plt.ylim(0, max_val)
     plt.xlabel('Date', fontsize=16)
     plt.ylabel("Cases", fontsize=16)
     plt.tick_params(axis='both', which='major', labelsize=6)

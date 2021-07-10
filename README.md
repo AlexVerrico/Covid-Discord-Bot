@@ -1,6 +1,6 @@
 # Covid Discord Bot
 
-This is a basic Discord bot to give you updates on covid 19. It currently has offical support for a limited number of countries, with more coming soon. Some other countries may work, but there is no guarantee. You can use the following link to add the bot to your server:
+This is a basic Discord bot to give you updates on Covid-19. It currently has offical support for a limited number of countries, with more coming soon. Some other countries may work, but there is no guarantee. You can use the following link to add the bot to your server:
 [https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=67584&scope=bot](https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=67584&scope=bot)
 
 Supported locations:
@@ -8,7 +8,7 @@ Supported locations:
 * USA
 * All Australian States and Territories.
 
-Unless otherwise stated, <type> can be cases, recoveries, or deaths.
+Unless otherwise stated, `<type>` can be cases, recoveries, or deaths.
 
 Available commands:
 
@@ -18,7 +18,7 @@ Displays the number of new <type> for today and yesterday for the provided locat
 Displays a graph of new cases for all Australian States and Territories for the last 2 weeks. Use it like `!covid graph`
 * `!covid average <type> <location`  
 Displays the 14 day average for the chosen location. Use it like `!covid average cases aus`  
-* `!covid total`  
+* _~~!covid total~~_  
 Total covid-19 cases recorded to-date. Use it like `!covid total`  
 * `!covid pog`  
 Is covid Pog in Australia? Use it like `!covid pog` _(Requested by a friend)_  
@@ -38,6 +38,7 @@ You will also need to create a file in your home directory named `.env` with the
 ```
 DISCORD_TOKEN=[your-discord-bot-token]
 PREFIX=!covid
+COVID_BOT_BASEDIR=/path/to/bot/files/
 ```  
 For more info on how to get a discord bot token see [https://discordpy.readthedocs.io/en/latest/discord.html#discord-intro](https://discordpy.readthedocs.io/en/latest/discord.html#discord-intro)
 You can replace the value of `PREFIX=` with any prefix that you want.  
@@ -51,6 +52,7 @@ Please update any relevant documentation
 ## PSAs:
  - ~~26/9/20: `!covid new recoveries <state>` is broken. Currently no ETA for repair.~~
     - Fixed 28/9/20 by @AlexVerrico
+ - 10/07/2021: `!covid total` is broken. Currently no ETA for repair.
  
 ## Changelog:
  - 30/9/20: Added `!covid graph` command (@AlexVerrico)

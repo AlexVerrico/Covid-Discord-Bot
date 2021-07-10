@@ -93,6 +93,10 @@ async def on_ready():
 
 @bot.command(name='new', help='Shows new data')
 async def new(ctx, data_type='cases', location='aus'):
+    if str(location).lower() == 'aus':
+        response = """the command `new cases aus` is currently broken. Please use `!covid new cases australia` instead"""
+        await ctx.send(response)
+        return
     response = get_data(location.lower(), data_type)
     await ctx.send(response)
     return
@@ -143,9 +147,9 @@ async def graph(ctx):
     plt.ylabel("Cases", fontsize=16)
     plt.tick_params(axis='both', which='major', labelsize=6)
     plt.legend()
-    fig.savefig('temp.jpg')
-    await ctx.send(file=discord.File('temp.jpg'))
-    os.remove('temp.jpg')
+    fig.savefig('graph.jpg')
+    await ctx.send(file=discord.File('graph.jpg'))
+    os.remove('graph.jpg')
     return
 
 
@@ -234,16 +238,6 @@ async def on_message(message):
     ctx = await bot.get_context(message)
     if str(message.content).startswith('!pog'):
         await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
-    if 'biden' in str(message.content).lower():
-        if str(ctx.author) != "Covid AU Testing Bot#2116" and str(ctx.author) != "Covid AU Bot#9575":
-            x = """||Fuck|| Biden
-||_Please note that this does not necessarily reflect the opinions of the bots creators :grin:_||"""
-            await ctx.send(x)
-    if 'trump' in str(message.content).lower():
-        if str(ctx.author) != "Covid AU Testing Bot#2116" and str(ctx.author) != "Covid AU Bot#9575":
-            x = """Trump will **Make America Great Again**!
-||_Please note that this does not necessarily reflect the opinions of the bots creators :grin:_||"""
-            await ctx.send(x)
     await bot.invoke(ctx)
     return
 

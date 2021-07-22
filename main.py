@@ -54,6 +54,10 @@ average_message = """Last 14 days in {location}: **{data}**
 total_message = """To date there have been **{data}** confirmed {data_type} of covid-19 recorded for {location}
 *Built by [Alex Verrico](https://alexverrico.com/)*"""
 
+v1_message = """Version 2 of this bot has now been deployed, which requires some new permissions.
+You can either add the appropriate permissions (Send messages, Embed Links, Attach Files, Read Message History, Use External Emojis, and Add Reactions) or you can kick the bot and add it with the new link:
+https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=378944&scope=bot"""
+
 locationsv2 = {
     'aus': {'name': 'Australia', 'source': 'covid19data.com.au'},
     'nsw': {'name': 'New South Wales', 'source': 'covid19data.com.au'},
@@ -115,7 +119,10 @@ async def on_ready():
 @bot.command(name='new', help='Shows new data')
 async def new(ctx, data_type='cases', location='aus'):
     response = get_data(location.lower(), data_type)
-    await ctx.send(embed=response)
+    try:
+        await ctx.send(embed=response)
+    except discord.errors.Forbidden:
+        await ctx.send(v1_message)
     return
 
 
@@ -147,18 +154,30 @@ async def graph(ctx):
                           include_date=True, date_range={'type': 'days', 'value': 14})
         if _data['status'] == 'error':
             if _data['content'] == 'Unrecognised location':
-                return discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000)
+                try:
+                    await ctx.send(embed=discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000))
+                except discord.errors.Forbidden:
+                    await ctx.send(v1_message)
             elif _data['content'] == 'Unsupported data_type':
-                return discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000)
+                try:
+                    await ctx.send(embed=discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000))
+                except discord.errors.Forbidden:
+                    await ctx.send(v1_message)
             else:
-                return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
+                try:
+                    await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+                except discord.errors.Forbidden:
+                    await ctx.send(v1_message)
         elif _data['status'] == 'ok':
             out = []
             for x in json.loads(_data['content']):
                 out.append(x[index])
             dldata.append(out)
         else:
-            return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
 
     temp_vals = []
 
@@ -197,7 +216,10 @@ async def graph(ctx):
     plt.tick_params(axis='both', which='major', labelsize=6)
     plt.legend()
     fig.savefig('graph.jpg')
-    await ctx.send(file=discord.File('graph.jpg'))
+    try:
+        await ctx.send(file=discord.File('graph.jpg'))
+    except discord.errors.Forbidden:
+        await ctx.send(v1_message)
     os.remove('graph.jpg')
     return
 
@@ -207,11 +229,20 @@ async def average(ctx, data_type='cases', location='aus'):
     data = covid.new(location=location, data_type=data_type, date_range={'type': 'days', 'value': 14})
     if data['status'] == 'error':
         if data['content'] == 'Unrecognised location':
-            return discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
         elif data['content'] == 'Unsupported data_type':
-            return discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
         else:
-            return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
     elif data['status'] == 'ok':
         data = json.loads(data['content'])
         x = 0
@@ -225,9 +256,15 @@ async def average(ctx, data_type='cases', location='aus'):
         x = float(str(x)[:4])
         response = discord_Embed(title='Average {d_t} per day'.format(d_t=data_type),
                                  description=average_message.format(location=location, data=x))
-        await ctx.send(embed=response)
+        try:
+            await ctx.send(embed=response)
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
     else:
-        return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
+        try:
+            await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
 
 
 @bot.command(name='total', help='Total covid-19 cases recorded to date')
@@ -235,20 +272,35 @@ async def total(ctx, data_type='cases', location='aus'):
     data = covid.total(data_type=data_type, location=location)
     if data['status'] == 'error':
         if data['content'] == 'Unrecognised location':
-            return discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
         elif data['content'] == 'Unsupported data_type':
-            return discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
         else:
-            return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
     elif data['status'] == 'ok':
         response = discord_Embed(title='Total {d_t} for {loc}'.format(d_t=data_type, loc=location),
                                  description=total_message.format(
                                      location=location, data=data['content'], data_type=data_type)
                                  )
-        await ctx.send(embed=response)
+        try:
+            await ctx.send(embed=response)
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
         return
     else:
-        return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
+        try:
+            await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
 
 
 bot.remove_command('help')
@@ -300,7 +352,10 @@ _**!covid average recoveries aus**_"""
     response.add_field(name='!covid graph', value=graph_field, inline=False)
     response.add_field(name='More info:', value=more_info_field, inline=False)
     response.add_field(name='Built by Alex Verrico', value=built_by_field, inline=False)
-    await ctx.send(embed=response)
+    try:
+        await ctx.send(embed=response)
+    except discord.errors.Forbidden:
+        await ctx.send(v1_message)
 
 
 if os.getenv('COVID_BOT_DO_POG'):
@@ -308,7 +363,10 @@ if os.getenv('COVID_BOT_DO_POG'):
     async def on_message(message):
         ctx = await bot.get_context(message)
         if str(message.content).startswith('!pog'):
-            await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
+            try:
+                await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
         await bot.invoke(ctx)
         return
 

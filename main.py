@@ -1,53 +1,62 @@
 import os
-import CovidParser.covid_parser as covid
+import CovidParser
 import datetime
 from dotenv import load_dotenv
 from discord.ext import commands
 from matplotlib import pyplot as plt
 import discord.file
 import json
+from discord import Embed as discord_Embed
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 PREFIX = os.getenv('PREFIX')
 BASE = os.getenv('COVID_BOT_BASEDIR')
 
+if os.getenv('COVID_BOT_LOGFILE2'):
+    log_file = os.getenv('COVID_BOT_LOGFILE2')
+
+
+    def log(data):
+        with open(log_file, 'a') as f:
+            f.write(f'{data}\n\n')
+        return
+
+
+    print = log
+
+if os.getenv('COVID_BOT_LOGFILE1'):
+    covid = CovidParser.CovidParser(cache_type=2, cache_update_interval=180, log_file=os.getenv('COVID_BOT_LOGFILE1'))
+else:
+    covid = CovidParser.CovidParser(cache_type=2, cache_update_interval=180, log_file=None)
+
 bot = commands.Bot(command_prefix="".join((PREFIX, ' ')))
 
-supportedResponse = """New %data_type% for %location%:
-Today: %tday%
-Yesterday: %yday%
-Source: %source%"""
-unsupportedResponse = """Error: that location is not supported yet.
-See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported locations."""
-unsupportedDataTypeResponse = """Error: that data type is not supported yet.
-See https://alexverrico.com/projects/CovidDiscordBot for a full list of supported data types."""
+success_message = """Today: **{tday}**
+Yesterday: **{yday}**
+Source: *{source}*
+*Built by [Alex Verrico](https://alexverrico.com/)*"""
 
-averageResponse = "Average daily %data_type% for last 14 days in %location%: %data%"
+location_not_supported_message = """Unfortunately, we don't support that location yet.
+Please check that it was spelt correctly, and if so feel free to submit a request for it to be added:
+https://github.com/AlexVerrico/Covid-Discord-Bot"""
 
-# locations = {'aus': 'Australia',
-#              'nsw': 'New South Wales',
-#              'vic': 'Victoria',
-#              'qld': 'Queensland',
-#              'sa': 'South Australia',
-#              'wa': 'Western Australia',
-#              'tas': 'Tasmania',
-#              'nt': 'Northern Territory',
-#              'act': 'Australian Capital Territory',
-#              'usa': 'United States of America'
-#              }
+data_type_not_supported_message = """Unfortunately, we don't support that data type yet.
+Please check that it was spelt correctly, and if so feel free to submit a request for it to be added:
+https://github.com/AlexVerrico/Covid-Discord-Bot"""
 
-# sources = {'aus': 'covid19data.com.au',
-#            'nsw': 'covid19data.com.au',
-#            'vic': 'covid19data.com.au',
-#            'qld': 'covid19data.com.au',
-#            'sa': 'covid19data.com.au',
-#            'wa': 'covid19data.com.au',
-#            'tas': 'covid19data.com.au',
-#            'nt': 'covid19data.com.au',
-#            'act': 'covid19data.com.au',
-#            'usa': 'epidemic-stats.com'
-#            }
+unknown_error_message = """Looks like we ran into an error. Please try again later, or get in touch and we can help:
+https://alexverrico.com/#contact"""
+
+average_message = """Last 14 days in {location}: **{data}**
+*Built by [Alex Verrico](https://alexverrico.com/)*"""
+
+total_message = """To date there have been **{data}** confirmed {data_type} of covid-19 recorded for {location}
+*Built by [Alex Verrico](https://alexverrico.com/)*"""
+
+v1_message = """Version 2 of this bot has now been deployed, which requires some new permissions.
+You can either add the appropriate permissions (Send messages, Embed Links, Attach Files, Read Message History, Use External Emojis, and Add Reactions) or you can kick the bot and add it with the new link:
+https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=378944&scope=bot"""
 
 locationsv2 = {
     'aus': {'name': 'Australia', 'source': 'covid19data.com.au'},
@@ -64,25 +73,41 @@ locationsv2 = {
 
 
 def get_data(loc='aus', data_type='cases'):
-    if loc in locationsv2:
-        data = covid.new(location=loc, data_type=data_type)
-        if data == "unsupportedDataType":
-            return unsupportedDataTypeResponse
-        response = supportedResponse.replace('%location%', locationsv2[loc]['name'])
-        response = response.replace('%source%', locationsv2[loc]['source'])
-        response = response.replace('%data_type%', data_type)
-        response = response.replace('%tday%', data[0])
-        response = response.replace('%yday%', data[1])
+    data = covid.new(location=loc, data_type=data_type, date_range={'type': 'days', 'value': 3}, include_date=False)
+    print(data['content'])
+    if data['status'] == 'error':
+        if data['content'] == 'Unrecognised location':
+            return discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000)
+        elif data['content'] == 'Unsupported data_type':
+            return discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000)
+        else:
+            return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
+    elif data['status'] == 'ok':
+        data = json.loads(data['content'])
+        if int(data[0]) <= int(data[1]) and int(data[0]) < 50:
+            color = 0x00FF00
+        elif int(data[0]) < 50:
+            color = 0xFF7F00
+        else:
+            color = 0xFF0000
+        if loc in locationsv2 and loc != 'usa':
+            response = discord_Embed(title='New {d_t} for {loc}'.format(loc=locationsv2[loc]['name'], d_t=data_type),
+                                     description=success_message.format(tday=data[0], yday=data[1],
+                                                                        source=locationsv2[loc]['source']),
+                                     colour=color)
+        elif loc == 'usa':
+            response = discord_Embed(title='New {d_t} for {loc}'.format(loc=locationsv2[loc]['name'], d_t=data_type),
+                                     description=success_message.format(tday=data[1], yday=data[2],
+                                                                        source=locationsv2[loc]['source']),
+                                     colour=color)
+        else:
+            response = discord_Embed(title='New {d_t} for {loc}'.format(loc=loc, d_t=data_type),
+                                     description=success_message.format(tday=data[1], yday=data[2],
+                                                                        source='epidemic-stats.com'),
+                                     colour=color)
+        return response
     else:
-        data = covid.new(location=loc, data_type=data_type)
-        if data == "unsupportedLocation":
-            return unsupportedResponse
-        response = supportedResponse.replace('%tday%', data[0])
-        response = response.replace('%data_type%', data_type)
-        response = response.replace('%yday%', data[1])
-        response = response.replace('%source%', 'epidemic-stats.com')
-        response = response.replace('%location%', loc)
-    return response
+        return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
 
 
 @bot.event
@@ -93,22 +118,21 @@ async def on_ready():
 
 @bot.command(name='new', help='Shows new data')
 async def new(ctx, data_type='cases', location='aus'):
-    if str(location).lower() == 'aus':
-        response = """the command `new cases aus` is currently broken. Please use `!covid new cases australia` instead"""
-        await ctx.send(response)
-        return
     response = get_data(location.lower(), data_type)
-    await ctx.send(response)
+    try:
+        await ctx.send(embed=response)
+    except discord.errors.Forbidden:
+        await ctx.send(v1_message)
     return
 
 
 @bot.command(name='graph', help='Displays a graph of cases in Australian states for the last 14 days')
 async def graph(ctx):
-    dldata = covid.download_data(r"https://atlas.jifo.co/api/connectors/0b334273-5661-4837-a639-e3a384d81d20")
-    dldata = json.loads(dldata)
-    dldata = dldata["data"]
-    dldata = dldata[8]
-
+    # dldata = covid._fetch_data_v3(r"https://atlas.jifo.co/api/connectors/0b334273-5661-4837-a639-e3a384d81d20")
+    # dldata = json.loads(dldata)
+    # dldata = dldata["data"]
+    # dldata = dldata[8]
+    dldata = []
     data = {'dates': {'data': [], 'num': 0},
             'nsw': {'data': [], 'num': 1, 'color': 'black', 'label': 'NSW'},
             'vic': {'data': [], 'num': 2, 'color': 'blue', 'label': 'VIC'},
@@ -120,14 +144,49 @@ async def graph(ctx):
             'act': {'data': [], 'num': 8, 'color': 'grey', 'label': 'ACT'}
             }
 
+    for location in data.keys():
+        if location == 'dates':
+            location = 'vic'
+            index = 0
+        else:
+            index = 1
+        _data = covid.new(location=location, data_type='cases',
+                          include_date=True, date_range={'type': 'days', 'value': 14})
+        if _data['status'] == 'error':
+            if _data['content'] == 'Unrecognised location':
+                try:
+                    await ctx.send(embed=discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000))
+                except discord.errors.Forbidden:
+                    await ctx.send(v1_message)
+            elif _data['content'] == 'Unsupported data_type':
+                try:
+                    await ctx.send(embed=discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000))
+                except discord.errors.Forbidden:
+                    await ctx.send(v1_message)
+            else:
+                try:
+                    await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+                except discord.errors.Forbidden:
+                    await ctx.send(v1_message)
+        elif _data['status'] == 'ok':
+            out = []
+            for x in json.loads(_data['content']):
+                out.append(x[index])
+            dldata.append(out)
+        else:
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
+
     temp_vals = []
 
-    for i in range(1, 15):
+    for i in range(0, 14):
         for x in data:
             if x == "dates":
-                data[x]['data'].insert(0, dldata[-i][data[x]['num']])
+                data[x]['data'].insert(0, dldata[data[x]['num']][i])
             else:
-                d = dldata[-i][data[x]['num']]
+                d = dldata[data[x]['num']][i]
                 if d == '':
                     d = 0
                 data[x]['data'].insert(0, int(d))
@@ -150,70 +209,98 @@ async def graph(ctx):
     for i in temp_vals:
         if i > max_val:
             max_val = i
-    max_val = max_val + int(max_val/10)
+    max_val = max_val + int(max_val / 10)
     plt.ylim(0, max_val)
     plt.xlabel('Date', fontsize=16)
     plt.ylabel("Cases", fontsize=16)
     plt.tick_params(axis='both', which='major', labelsize=6)
     plt.legend()
     fig.savefig('graph.jpg')
-    await ctx.send(file=discord.File('graph.jpg'))
+    try:
+        await ctx.send(file=discord.File('graph.jpg'))
+    except discord.errors.Forbidden:
+        await ctx.send(v1_message)
     os.remove('graph.jpg')
-    return
-
-
-@bot.command(name='pogvic', help='is covid pog in vic?')
-async def pogvic(ctx):
-    _tempcases = covid.new('vic', data_type='cases')
-    _tempdeaths = covid.new('vic', data_type='deaths')
-    if int(_tempdeaths[0]) < int(_tempdeaths[1]) or int(_tempdeaths[0]) == 0:
-        if int(_tempcases[0]) < int(_tempcases[1]) or int(_tempcases[0]) == 0:
-            await ctx.send('covid:', file=discord.File("".join((BASE, 'imgs/pog.png'))))
-        else:
-            await ctx.send('not pog')
-    else:
-        await ctx.send('not pog')
-    return
-
-
-@bot.command(name='pog', help='is covid pog in aus?')
-async def pog(ctx):
-    _tempcases = covid.new('aus', data_type='cases')
-    _tempdeaths = covid.new('aus', data_type='deaths')
-    if _tempdeaths[0] < _tempdeaths[1] or _tempdeaths[0] == "0":
-        if _tempcases[0] < _tempcases[1] or _tempcases[0] == "0":
-            await ctx.send('covid:', file=discord.File("".join((BASE, 'imgs/pog.png'))))
-        else:
-            await ctx.send('not pog')
-    else:
-        await ctx.send('not pog')
     return
 
 
 @bot.command(name='average', help='14 day average')
 async def average(ctx, data_type='cases', location='aus'):
-    data = covid.new(location=location, data_type=data_type, time='14days')
-    x = 0
-    for i in range(0, 14):
-        if data[i] == '':
-            y = 0
+    data = covid.new(location=location, data_type=data_type, date_range={'type': 'days', 'value': 14})
+    if data['status'] == 'error':
+        if data['content'] == 'Unrecognised location':
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
+        elif data['content'] == 'Unsupported data_type':
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
         else:
-            y = int(data[i])
-        x = x + y
-    x = float(x) / 14
-    x = float(str(x)[:4])
-    response = averageResponse.replace('%location%', location)
-    response = response.replace('%data_type%', data_type)
-    response = response.replace('%data%', str(x))
-    await ctx.send(response)
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
+    elif data['status'] == 'ok':
+        data = json.loads(data['content'])
+        x = 0
+        for i in range(0, 14):
+            if data[i] == '':
+                y = 0
+            else:
+                y = int(data[i])
+            x = x + y
+        x = float(x) / 14
+        x = float(str(x)[:4])
+        response = discord_Embed(title='Average {d_t} per day'.format(d_t=data_type),
+                                 description=average_message.format(location=location, data=x))
+        try:
+            await ctx.send(embed=response)
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
+    else:
+        try:
+            await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
 
 
 @bot.command(name='total', help='Total covid-19 cases recorded to date')
-async def total(ctx, data_type='cases', location='global'):
-    data = covid.total(data_type='cases', location='global')
-    response = f'To date there have been {data} confirmed cases of covid-19 recorded globally.'
-    await ctx.send(response)
-    return
+async def total(ctx, data_type='cases', location='aus'):
+    data = covid.total(data_type=data_type, location=location)
+    if data['status'] == 'error':
+        if data['content'] == 'Unrecognised location':
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
+        elif data['content'] == 'Unsupported data_type':
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
+        else:
+            try:
+                await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
+    elif data['status'] == 'ok':
+        response = discord_Embed(title='Total {d_t} for {loc}'.format(d_t=data_type, loc=location),
+                                 description=total_message.format(
+                                     location=location, data=data['content'], data_type=data_type)
+                                 )
+        try:
+            await ctx.send(embed=response)
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
+        return
+    else:
+        try:
+            await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+        except discord.errors.Forbidden:
+            await ctx.send(v1_message)
 
 
 bot.remove_command('help')
@@ -239,16 +326,48 @@ _This bot also responds to `!pog`, I'll let you figure out what that does :wink:
 Developed by Alex Verrico (https://alexverrico.com/)
 _If you find this bot useful, please consider supporting it through https://www.buymeacoffee.com/AlexVerrico_
 """
-    await ctx.send(help_response)
+
+    help_description = """**Commands:**"""
+
+    new_field = """This command provides the number of new cases, recoveries, or deaths from the last 2 days, use it like
+_**!covid new cases vic**_"""
+
+    total_field = """This command provides the total number of cases, recoveries, or deaths recorded to date, use it like
+_**!covid total deaths nsw**_"""
+
+    graph_field = """This command provides a graph of the number of new cases per day for the last 14 days in each australian state, use it like
+_**!covid graph**_"""
+
+    average_field = """This command provides the average number of daily new cases, recoveries, or deaths from the last 14 days, use it like
+_**!covid average recoveries aus**_"""
+
+    more_info_field = """For more information, visit https://github.com/AlexVerrico/Covid-Discord-Bot/"""
+
+    built_by_field = """You can support me by [donating](https://www.buymeacoffee.com/AlexVerrico) or [hiring me](https://alexverrico.com/#contact)."""
+
+    response = discord_Embed(title='Covid AU Bot', description=help_description)
+    response.add_field(name='!covid new', value=new_field, inline=False)
+    response.add_field(name='!covid total', value=total_field, inline=False)
+    response.add_field(name='!covid average', value=average_field, inline=False)
+    response.add_field(name='!covid graph', value=graph_field, inline=False)
+    response.add_field(name='More info:', value=more_info_field, inline=False)
+    response.add_field(name='Built by Alex Verrico', value=built_by_field, inline=False)
+    try:
+        await ctx.send(embed=response)
+    except discord.errors.Forbidden:
+        await ctx.send(v1_message)
 
 
-@bot.event
-async def on_message(message):
-    ctx = await bot.get_context(message)
-    if str(message.content).startswith('!pog'):
-        await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
-    await bot.invoke(ctx)
-    return
-
+if os.getenv('COVID_BOT_DO_POG'):
+    @bot.event
+    async def on_message(message):
+        ctx = await bot.get_context(message)
+        if str(message.content).startswith('!pog'):
+            try:
+                await ctx.send(file=discord.File("".join((BASE, 'imgs/pog.png'))))
+            except discord.errors.Forbidden:
+                await ctx.send(v1_message)
+        await bot.invoke(ctx)
+        return
 
 bot.run(TOKEN)

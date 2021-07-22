@@ -1,4 +1,5 @@
-venv
+/venv
 .env
 serverCount.txt
-.idea
+/.idea
+/.private

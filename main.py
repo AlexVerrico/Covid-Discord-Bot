@@ -84,6 +84,14 @@ def get_data(loc='aus', data_type='cases'):
             return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
     elif data['status'] == 'ok':
         data = json.loads(data['content'])
+        try:
+            int(data[0])
+        except ValueError:
+            data[0] = 0
+        try:
+            int(data[1])
+        except ValueError:
+            data[1] = 0
         if int(data[0]) <= int(data[1]) and int(data[0]) < 50:
             color = 0x00FF00
         elif int(data[0]) < 50:

@@ -119,6 +119,11 @@ def get_data(loc='aus', data_type='cases'):
             return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
     elif data['status'] == 'ok':
         data = json.loads(data['content'])
+        if '%' in data:
+            response = discord_Embed(title='New {d_t} for {loc}'.format(loc=locationsv2[loc]['name'], d_t=data_type),
+                                     description=success_message.format(tday=data, yday='',
+                                                                        source=locationsv2[loc]['source']))
+            return response
         try:
             int(data[0])
         except ValueError:

@@ -3,3 +3,5 @@
 serverCount.txt
 /.idea
 /.private
+/callback_list.json
+/messages.json

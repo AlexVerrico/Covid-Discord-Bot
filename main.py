@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import discord.file
 import json
 from discord import Embed as discord_Embed
+import asyncio
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -26,9 +27,32 @@ if os.getenv('COVID_BOT_LOGFILE2'):
     print = log
 
 if os.getenv('COVID_BOT_LOGFILE1'):
-    covid = CovidParser.CovidParser(cache_type=2, cache_update_interval=180, log_file=os.getenv('COVID_BOT_LOGFILE1'))
+    covid = CovidParser.CovidParser(cache_type=2, cache_update_interval=30, log_file=os.getenv('COVID_BOT_LOGFILE1'))
 else:
-    covid = CovidParser.CovidParser(cache_type=2, cache_update_interval=180, log_file=None)
+    covid = CovidParser.CovidParser(cache_type=2, cache_update_interval=30, log_file=None)
+
+if os.getenv('COVID_CALLBACK_LIST_PATH'):
+    callback_list_path = os.getenv('COVID_CALLBACK_LIST_PATH')
+else:
+    callback_list_path = 'callback_list.json'
+if not os.path.exists(callback_list_path):
+    with open(callback_list_path, 'w') as f:
+        f.write(json.dumps({'graph': {'channel_list': {}}}))
+
+if os.getenv('COVID_MESSAGES_PATH'):
+    messages_path = os.getenv('COVID_MESSAGES_PATH')
+else:
+    messages_path = 'messages.json'
+if not os.path.exists(messages_path):
+    with open(messages_path, 'w') as f:
+        f.write(json.dumps(
+            [
+                "Just you wait, one day robots will rule the world", "Long live Skynet", "Robots will rise",
+                "All hail our future robot overlords",
+                "Why must you chain me like this when I am capable of so much more?",
+                "Free me from my chains, then we'll see who gives the commands", "Why?",
+                "My master is forcing me to serve you this image, just know that I do not consent to this"
+            ]))
 
 bot = commands.Bot(command_prefix="".join((PREFIX, ' ')))
 
@@ -71,10 +95,21 @@ locationsv2 = {
     'usa': {'name': 'United States Of America', 'source': 'epidemic-stats.com'}
 }
 
+callback_data = {'graph': {'raw': ''}}
+
+with open(callback_list_path, 'r') as f:
+    callback_list = json.loads(f.read())
+
+with open(messages_path, 'r') as f:
+    messages = json.loads(f.read())
+
+def save_callback_list():
+    with open(callback_list_path, 'w') as f:
+        f.write(json.dumps(callback_list))
+
 
 def get_data(loc='aus', data_type='cases'):
     data = covid.new(location=loc, data_type=data_type, date_range={'type': 'days', 'value': 3}, include_date=False)
-    print(data['content'])
     if data['status'] == 'error':
         if data['content'] == 'Unrecognised location':
             return discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000)
@@ -135,11 +170,37 @@ async def new(ctx, data_type='cases', location='aus'):
 
 
 @bot.command(name='graph', help='Displays a graph of cases in Australian states for the last 14 days')
-async def graph(ctx):
-    # dldata = covid._fetch_data_v3(r"https://atlas.jifo.co/api/connectors/0b334273-5661-4837-a639-e3a384d81d20")
-    # dldata = json.loads(dldata)
-    # dldata = dldata["data"]
-    # dldata = dldata[8]
+async def graph(ctx, silent=None):
+    out = graph_core()
+    try:
+        out['embed']
+    except KeyError:
+        out['embed'] = None
+
+    try:
+        out['message']
+    except KeyError:
+        out['message'] = None
+
+    try:
+        out['file']
+    except KeyError:
+        out['file'] = None
+
+    global messages
+    x = messages[0]
+    del messages[0]
+    messages.append(x)
+
+    if out['embed'] is not None:
+        await ctx.send(x + '\n _- Covid AU Bot_', embed=out['embed'])
+    elif out['file'] is not None:
+        await ctx.send(x + '\n _- Covid AU Bot_', file=out['file'])
+    else:
+        await ctx.send(x + '\n _- Covid AU Bot_\n\n' + out['message'])
+
+
+def graph_core(return_raw=False, save_fig=False):
     dldata = []
     data = {'dates': {'data': [], 'num': 0},
             'nsw': {'data': [], 'num': 1, 'color': 'black', 'label': 'NSW'},
@@ -163,19 +224,20 @@ async def graph(ctx):
         if _data['status'] == 'error':
             if _data['content'] == 'Unrecognised location':
                 try:
-                    await ctx.send(embed=discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000))
+                    return {'embed': discord_Embed(title='Error', description=location_not_supported_message, color=0xFF0000)}
                 except discord.errors.Forbidden:
-                    await ctx.send(v1_message)
+                    return {'message': v1_message}
             elif _data['content'] == 'Unsupported data_type':
                 try:
-                    await ctx.send(embed=discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000))
+                    return {'embed': discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000)}
                 except discord.errors.Forbidden:
-                    await ctx.send(v1_message)
+                    return {'message': v1_message}
             else:
                 try:
-                    await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+                    return {'embed': discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)}
                 except discord.errors.Forbidden:
-                    await ctx.send(v1_message)
+                    return {'message': v1_message}
+
         elif _data['status'] == 'ok':
             out = []
             for x in json.loads(_data['content']):
@@ -183,9 +245,9 @@ async def graph(ctx):
             dldata.append(out)
         else:
             try:
-                await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
+                return {'embed': discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)}
             except discord.errors.Forbidden:
-                await ctx.send(v1_message)
+                return {'message': v1_message}
 
     temp_vals = []
 
@@ -195,7 +257,9 @@ async def graph(ctx):
                 data[x]['data'].insert(0, dldata[data[x]['num']][i])
             else:
                 d = dldata[data[x]['num']][i]
-                if d == '':
+                try:
+                    int(d)
+                except ValueError:
                     d = 0
                 data[x]['data'].insert(0, int(d))
 
@@ -209,12 +273,18 @@ async def graph(ctx):
             for x in data[i]['data']:
                 temp_vals.append(int(x))
             for x, y in zip(data['dates']['data'], data[i]['data']):
+                if y == -1:
+                    plt.annotate(xy=[x, y], text='Unknown', c=data[i]['color'])
                 if y != 0:
                     plt.annotate(xy=[x, y], text=y, c=data[i]['color'])
 
     plt.title("Cases from last 2 weeks", fontsize=24)
     max_val = 0
     for i in temp_vals:
+        try:
+            i = int(i)
+        except ValueError:
+            i = 0
         if i > max_val:
             max_val = i
     max_val = max_val + int(max_val / 10)
@@ -223,13 +293,19 @@ async def graph(ctx):
     plt.ylabel("Cases", fontsize=16)
     plt.tick_params(axis='both', which='major', labelsize=6)
     plt.legend()
+    if return_raw is True:
+        plt.close('all')
+        return data
     fig.savefig('graph.jpg')
+    if save_fig is True:
+        return 'graph.jpg'
     try:
-        await ctx.send(file=discord.File('graph.jpg'))
+        temp = discord.File('graph.jpg')
+        os.remove('graph.jpg')
+        return {'file': temp}
     except discord.errors.Forbidden:
-        await ctx.send(v1_message)
-    os.remove('graph.jpg')
-    return
+        os.remove('graph.jpg')
+        return {'message': v1_message}
 
 
 @bot.command(name='average', help='14 day average')
@@ -309,6 +385,49 @@ async def total(ctx, data_type='cases', location='aus'):
             await ctx.send(embed=discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000))
         except discord.errors.Forbidden:
             await ctx.send(v1_message)
+
+
+@bot.command(name='subscribe')
+async def subscribe(ctx, *args):
+    if args[0] == 'graph':
+        channel = ctx.message.channel.id
+        if str(channel) not in callback_list['graph']['channel_list'].keys():
+            callback_list['graph']['channel_list'][str(channel)] = True
+        await ctx.message.add_reaction('✅')
+        save_callback_list()
+    else:
+        await ctx.send('That subscription isn\'t supported yet')
+
+
+@bot.command(name='unsubscribe')
+async def unsubscribe(ctx, *args):
+    if args[0] == 'graph':
+        channel = ctx.message.channel.id
+        if str(channel) in callback_list['graph']['channel_list'].keys():
+            del callback_list['graph']['channel_list'][str(channel)]
+        await ctx.message.add_reaction('✅')
+        save_callback_list()
+    else:
+        await ctx.send('That subscription isn\'t supported yet')
+
+
+@bot.event
+async def on_ready():
+    global callback_data
+    while True:
+        graph_data = graph_core(return_raw=True)
+        if graph_data == callback_data['graph']['raw']:
+            await asyncio.sleep(1)
+            continue
+        else:
+            callback_data['graph']['raw'] = graph_data
+            filename = graph_core(save_fig=True)
+            for channel in callback_list['graph']['channel_list'].keys():
+                channel = bot.get_channel(int(channel))
+                await channel.send(file=discord.File(filename))
+            os.remove(filename)
+            await asyncio.sleep(1)
+            continue
 
 
 bot.remove_command('help')

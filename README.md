@@ -69,6 +69,7 @@ Please update any relevant documentation
  - 30/9/20: Added `!covid graph` command (@AlexVerrico)  
  - Some time during October 2020: Added `!covid total`, `!covid pog`, `!covid pogvic`, `!covid average` (@AlexVerrico)  
  - 22/7/21: Version 2! Switches to Embeds for displaying most data, and during testing has proven to be more reliable.  
+ - 32/10/21: V2.1.0 - Adds subscribe command (Not stable yet)  
 
 ## Contributors:
  - [@AlexVerrico](https://github.com/AlexVerrico/)

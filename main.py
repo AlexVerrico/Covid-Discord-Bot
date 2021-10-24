@@ -460,6 +460,19 @@ async def unsubscribe(ctx, *args):
         await ctx.send('That subscription isn\'t supported yet')
 
 
+@bot.command(name='emergency_unsubscribe')
+async def emergency_unsubscribe(ctx, *args):
+    if str(ctx.message.author.id) == '336674083179855885':
+        if args[0] == 'graph':
+            channel = ctx.message.channel.id
+            if str(channel) in callback_list['graph']['channel_list'].keys():
+                del callback_list['graph']['channel_list'][str(channel)]
+            await ctx.message.add_reaction('✅')
+            save_callback_list()
+        else:
+            await ctx.send('That subscription isn\'t supported yet')
+
+
 @bot.event
 async def on_ready():
     global callback_data

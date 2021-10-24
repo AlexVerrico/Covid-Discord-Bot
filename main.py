@@ -61,6 +61,10 @@ Yesterday: **{yday}**
 Source: *{source}*
 *Built by [Alex Verrico](https://alexverrico.com/)*"""
 
+vaccine_percent_message = """{perc} of {age_type} in {loc} have had {vac_status} doses of a covid vaccine.
+Source: *{source}*
+*Built by [Alex Verrico](https://alexverrico.com/)*"""
+
 location_not_supported_message = """Unfortunately, we don't support that location yet.
 Please check that it was spelt correctly, and if so feel free to submit a request for it to be added:
 https://github.com/AlexVerrico/Covid-Discord-Bot"""
@@ -70,7 +74,7 @@ Please check that it was spelt correctly, and if so feel free to submit a reques
 https://github.com/AlexVerrico/Covid-Discord-Bot"""
 
 unknown_error_message = """Looks like we ran into an error. Please try again later, or get in touch and we can help:
-https://alexverrico.com/#contact"""
+https://github.com/AlexVerrico/Covid-Discord-Bot/issues"""
 
 average_message = """Last 14 days in {location}: **{data}**
 *Built by [Alex Verrico](https://alexverrico.com/)*"""
@@ -95,6 +99,18 @@ locationsv2 = {
     'usa': {'name': 'United States Of America', 'source': 'epidemic-stats.com'}
 }
 
+full_loc_names = {
+    'australia': 'aus',
+    'new south wales': 'nsw',
+    'victoria': 'vic',
+    'queensland': 'qld',
+    'south australia': 'sa',
+    'western australia': 'wa',
+    'tasmania': 'tas',
+    'northern territory': 'nt',
+    'australian capital territory': 'act',
+}
+
 callback_data = {'graph': {'raw': ''}}
 
 with open(callback_list_path, 'r') as f:
@@ -103,12 +119,15 @@ with open(callback_list_path, 'r') as f:
 with open(messages_path, 'r') as f:
     messages = json.loads(f.read())
 
+
 def save_callback_list():
     with open(callback_list_path, 'w') as f:
         f.write(json.dumps(callback_list))
 
 
 def get_data(loc='aus', data_type='cases'):
+    if loc in full_loc_names:
+        loc = full_loc_names[loc]
     data = covid.new(location=loc, data_type=data_type, date_range={'type': 'days', 'value': 3}, include_date=False)
     if data['status'] == 'error':
         if data['content'] == 'Unrecognised location':
@@ -119,10 +138,33 @@ def get_data(loc='aus', data_type='cases'):
             return discord_Embed(title='Error', description=unknown_error_message, color=0xFF0000)
     elif data['status'] == 'ok':
         data = json.loads(data['content'])
-        if '%' in data:
-            response = discord_Embed(title='New {d_t} for {loc}'.format(loc=locationsv2[loc]['name'], d_t=data_type),
-                                     description=success_message.format(tday=data, yday='',
-                                                                        source=locationsv2[loc]['source']))
+        if data_type.startswith('vaccinations-percent'):
+            if data_type == 'vaccinations-percent':
+                data_type = 'vaccinations-percent-over16-seconddose'
+            data_type_split = data_type.split('-')
+
+            if data_type_split[2] == 'over16':
+                age_type = 'people over 16 years of age'
+            elif data_type_split[2] == 'over12':
+                age_type = 'people over 12 years of age'
+            elif data_type_split[2] == 'all':
+                age_type = 'people'
+            else:
+                return discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000)
+
+            if data_type_split[3] == 'seconddose':
+                vac_status = '2'
+            elif data_type_split[3] == 'firstdose':
+                vac_status = '1'
+            else:
+                return discord_Embed(title='Error', description=data_type_not_supported_message, color=0xFF0000)
+            vaccine_percent_message = """{perc} of {age_type} in {loc} have had {vac_status} doses of a covid vaccine.
+            Source: *{source}*
+            *Built by [Alex Verrico](https://alexverrico.com/)*"""
+            response = discord_Embed(title='Vaccination status', description=vaccine_percent_message
+                                     .format(perc=data, age_type=age_type,
+                                             loc=locationsv2[loc]['name'],
+                                             vac_status=vac_status, source=locationsv2[loc]['source']))
             return response
         try:
             int(data[0])
@@ -166,7 +208,7 @@ async def on_ready():
 
 @bot.command(name='new', help='Shows new data')
 async def new(ctx, data_type='cases', location='aus'):
-    response = get_data(location.lower(), data_type)
+    response = get_data(location.lower(), data_type.lower())
     try:
         await ctx.send(embed=response)
     except discord.errors.Forbidden:
@@ -393,6 +435,7 @@ async def total(ctx, data_type='cases', location='aus'):
 
 
 @bot.command(name='subscribe')
+@commands.has_role('Covid Bot Controller')
 async def subscribe(ctx, *args):
     if args[0] == 'graph':
         channel = ctx.message.channel.id
@@ -405,6 +448,7 @@ async def subscribe(ctx, *args):
 
 
 @bot.command(name='unsubscribe')
+@commands.has_role('Covid Bot Controller')
 async def unsubscribe(ctx, *args):
     if args[0] == 'graph':
         channel = ctx.message.channel.id

@@ -1,4 +1,7 @@
 # Covid Discord Bot
+***
+# Covid Bot is currently offline due to various reasons. There are currently no plans for Covid Bot to come back online
+***
 
 This is a basic Discord bot to give you updates on Covid-19. It currently has offical support for a limited number of countries, with more coming soon. Some other countries may work, but there is no guarantee. You can use the following link to add the bot to your server:
 [https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=378944&scope=bot](https://discord.com/api/oauth2/authorize?client_id=757760561772626051&permissions=378944&scope=bot)
